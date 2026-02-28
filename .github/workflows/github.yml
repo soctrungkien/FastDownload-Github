@@ -1,0 +1,45 @@
+name: Github
+
+on:
+  workflow_dispatch:
+    inputs:
+      file_url:
+        description: "URL"
+        required: true
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download
+        id: download
+        run: |
+          URL="${{ github.event.inputs.file_url }}"
+          FILENAME=$(basename "$URL")
+
+          if [ -z "$FILENAME" ] || [ "$FILENAME" = "/" ]; then
+            FILENAME="name"
+          fi
+
+          curl -L "$URL" -o "$FILENAME"
+          echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+
+      - name: Get Time
+        id: time
+        run: |
+          TIME=$(TZ=Asia/Ho_Chi_Minh date +"%Y-%m-%d_%H-%M-%S")
+          echo "time=$TIME" >> $GITHUB_OUTPUT
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.download.outputs.filename }}-${{ steps.time.outputs.time }}
+          name: ${{ steps.download.outputs.filename }}-${{ steps.time.outputs.time }}
+          files: ${{ steps.download.outputs.filename }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download URL
+        run: |
+          echo "Download link:"
+          echo "https://github.com/${{ github.repository }}/releases/download/${{ steps.download.outputs.filename }}-${{ steps.time.outputs.time }}/${{ steps.download.outputs.filename }}"
