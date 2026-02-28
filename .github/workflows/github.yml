@@ -7,8 +7,11 @@ on:
         description: "URL"
         required: true
 
+permissions:
+  contents: write
+
 jobs:
-  mirror:
+  required:
     runs-on: ubuntu-latest
     steps:
       - name: Download
