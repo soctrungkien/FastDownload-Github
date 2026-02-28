@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  required:
+  main:
     runs-on: ubuntu-latest
     steps:
       - name: Download
